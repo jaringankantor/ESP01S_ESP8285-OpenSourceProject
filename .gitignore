@@ -1,0 +1,138 @@
+# ----------------------------
+# OS files
+# ----------------------------
+.DS_Store
+.DS_Store?
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100/
+.Trashes/
+._*
+
+# ----------------------------
+# Editor / IDE
+# ----------------------------
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+\#*\#
+.project
+.cproject
+.settings/
+.metadata/
+.history/
+
+# ----------------------------
+# Logs, temp, cache
+# ----------------------------
+*.log
+logs/
+tmp/
+temp/
+.cache/
+*.tmp
+
+# ----------------------------
+# Build artifacts (generic C/C++)
+# ----------------------------
+build/
+dist/
+out/
+Debug/
+Release/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.d
+*.su
+
+# ----------------------------
+# PlatformIO
+# ----------------------------
+.pio/
+.piolibdeps/
+.platformio/
+.clangd/
+compile_commands.json
+
+# ----------------------------
+# Arduino / ESP
+# ----------------------------
+*.ino.cpp
+*.ino.cpp.d
+*.ino.elf
+*.arduino.*
+arduino_build_*/
+sketch_jan*/
+sketch_feb*/
+sketch_mar*/
+sketch_apr*/
+sketch_may*/
+sketch_jun*/
+sketch_jul*/
+sketch_aug*/
+sketch_sep*/
+sketch_oct*/
+sketch_nov*/
+sketch_dec*/
+
+# ----------------------------
+# ESP-IDF
+# ----------------------------
+build*/
+sdkconfig
+sdkconfig.old
+dependencies.lock
+
+# ----------------------------
+# IoT secrets / credentials
+# ----------------------------
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.p12
+secrets.h
+secrets.hpp
+wifi_config.h
+credentials.h
+
+# ----------------------------
+# Python (tools/scripts)
+# ----------------------------
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ----------------------------
+# Node.js (web dashboard/tools)
+# ----------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ----------------------------
+# Test/coverage
+# ----------------------------
+coverage/
+.gcda
+.gcno
+*.gcov
