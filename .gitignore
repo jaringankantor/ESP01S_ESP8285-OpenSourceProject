@@ -136,3 +136,6 @@ coverage/
 .gcda
 .gcno
 *.gcov
+
+# Kredensial lokal — jangan commit
+config.h
