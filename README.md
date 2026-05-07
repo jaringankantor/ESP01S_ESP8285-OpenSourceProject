@@ -166,7 +166,3 @@ Payload berupa angka desimal dengan dua digit di belakang koma, contoh:
 - `Failed to read from DHT sensor`: periksa wiring DHT11, pin DATA ke GPIO2, dan pull-up resistor.
 - Upload gagal: pastikan ESP masuk mode flashing, GPIO0 ke GND saat reset, dan port serial benar.
 - Modul reset berulang: biasanya karena supply 3.3V tidak cukup stabil.
-
-## Lisensi
-
-Belum ada lisensi eksplisit di repository ini. Tambahkan file `LICENSE` jika project akan dipublikasikan atau dipakai ulang oleh pihak lain.
