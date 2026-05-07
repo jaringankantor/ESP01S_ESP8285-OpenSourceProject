@@ -5,12 +5,11 @@
 #include <DHT.h>
 #include <PubSubClient.h>
 #include <memory>
-#include <stdlib.h>
+#include <time.h>
 
 #define DHTPIN              2
 #define DHTTYPE             DHT11
 #define PUBLISH_INTERVAL    5000
-#define DEFAULT_MQTT_PORT   8883
 
 DHT dht(DHTPIN, DHTTYPE);
 BearSSL::WiFiClientSecure wifiClient;
@@ -18,12 +17,33 @@ PubSubClient mqttClient(wifiClient);
 std::unique_ptr<BearSSL::X509List> mqttCaCert;
 unsigned long lastPublishMillis = 0;
 
+void syncClock() {
+  configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  Serial.print("Syncing NTP time");
+
+  time_t now = time(nullptr);
+  uint8_t retries = 0;
+  while (now < 1700000000 && retries < 30) {
+    delay(500);
+    Serial.print(".");
+    now = time(nullptr);
+    retries++;
+  }
+
+  if (now >= 1700000000) {
+    Serial.println(" ok");
+    wifiClient.setX509Time(now);
+  } else {
+    Serial.println(" failed (using local clock)");
+  }
+}
+
 void connectWiFi() {
   if (WiFi.status() == WL_CONNECTED) {
     return;
   }
 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(AppConfig::WIFI_SSID, AppConfig::WIFI_PASSWORD);
   Serial.print("\n\r \n\rWorking to connect");
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -33,7 +53,7 @@ void connectWiFi() {
 
   Serial.println("\nDHT Weather Reading Server");
   Serial.print("Connected to ");
-  Serial.println(WIFI_SSID);
+  Serial.println(AppConfig::WIFI_SSID);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 }
@@ -48,11 +68,15 @@ void connectMQTT() {
 
   while (!mqttClient.connected()) {
     Serial.print("Connecting to MQTT...");
-    if (mqttClient.connect(clientId, MQTT_USER, MQTT_PASS)) {
+    if (mqttClient.connect(clientId, AppConfig::MQTT_USER, AppConfig::MQTT_PASS)) {
       Serial.println("connected");
     } else {
+      char sslError[128];
+      wifiClient.getLastSSLError(sslError, sizeof(sslError));
       Serial.print("failed, rc=");
       Serial.print(mqttClient.state());
+      Serial.print(", tls=");
+      Serial.print(sslError);
       Serial.println(" retry in 5 seconds");
       delay(5000);
     }
@@ -74,17 +98,17 @@ void publishSensorData() {
   dtostrf(temperature, 0, 2, suhuPayload);
   dtostrf(humidity, 0, 2, kelembapanPayload);
 
-  bool suhuOk = mqttClient.publish(MQTT_TOPIC_SUHU, suhuPayload, true);
-  bool kelembapanOk = mqttClient.publish(MQTT_TOPIC_KELEMBAPAN, kelembapanPayload, true);
+  bool suhuOk = mqttClient.publish(AppConfig::MQTT_TOPIC_SUHU, suhuPayload, true);
+  bool kelembapanOk = mqttClient.publish(AppConfig::MQTT_TOPIC_KELEMBAPAN, kelembapanPayload, true);
 
   if (suhuOk && kelembapanOk) {
     Serial.print("Published suhu to ");
-    Serial.print(MQTT_TOPIC_SUHU);
+    Serial.print(AppConfig::MQTT_TOPIC_SUHU);
     Serial.print(": ");
     Serial.println(suhuPayload);
 
     Serial.print("Published kelembapan to ");
-    Serial.print(MQTT_TOPIC_KELEMBAPAN);
+    Serial.print(AppConfig::MQTT_TOPIC_KELEMBAPAN);
     Serial.print(": ");
     Serial.println(kelembapanPayload);
   } else {
@@ -97,18 +121,17 @@ void setup() {
 
   dht.begin();
   connectWiFi();
+  syncClock();
 
-  mqttCaCert.reset(new BearSSL::X509List(MQTT_CA_CERT));
-  wifiClient.setTrustAnchors(mqttCaCert.get());
-
-  uint16_t mqttPort = static_cast<uint16_t>(atoi(MQTT_PORT));
-  if (mqttPort == 0) {
-    mqttPort = DEFAULT_MQTT_PORT;
-    Serial.print("Invalid MQTT_PORT, fallback to ");
-    Serial.println(mqttPort);
+  if (AppConfig::MQTT_TLS_INSECURE) {
+    Serial.println("WARNING: MQTT TLS hostname verification disabled (insecure)");
+    wifiClient.setInsecure();
+  } else {
+    mqttCaCert.reset(new BearSSL::X509List(AppConfig::MQTT_CA_CERT));
+    wifiClient.setTrustAnchors(mqttCaCert.get());
   }
 
-  mqttClient.setServer(MQTT_SERVER, mqttPort);
+  mqttClient.setServer(AppConfig::MQTT_SERVER, AppConfig::MQTT_PORT);
   connectMQTT();
 }
 
